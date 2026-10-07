@@ -4,7 +4,7 @@
 
 ## Review context
 
-Reviewed `example/event-worker` at commit `4d918ce` on 2026-10-07. Scope covered worker startup/configuration, event ingestion, retry/dead-letter behavior, contributor setup, CI validation, operator documentation, and representative tests. The review ran in a sandboxed disposable clone at `4d918ce`: dependencies were installed from the lockfile with lifecycle scripts disabled, no credentials were reachable, and network access was limited to the package registry. The reviewed checkout had no tracked-file changes afterward. Production infrastructure and repository merge settings were not accessed.
+Reviewed `example/event-worker` at commit `4d918ce` on 2026-10-07. Scope covered worker startup/configuration, event ingestion, retry/dead-letter behavior, contributor setup, CI validation, operator documentation, and representative tests. The review ran in a sandboxed fresh clone at `4d918ce`. Writes were confined to the clone and sandbox temporary directories, no credentials were reachable, and the only network access was to the package registry while fetching locked dependencies with lifecycle scripts disabled. The original checkout had no tracked-file changes afterward. Production infrastructure and repository merge settings were not accessed.
 
 Checks run: typecheck passed; lint passed; tests passed; build passed. No formatting check was defined.
 
@@ -50,12 +50,12 @@ Frontier capability is not a goal: the worker is internal infrastructure whose d
 ### R1 — Make the supported local startup path self-contained
 
 - **Primary category:** Ergonomics and ease of use
-- **Verification:** Confirmed — reproduced. Following `README.md:24-51` in the disposable clone fails at startup with a missing-configuration error raised by `src/config/load.ts:19-47`.
+- **Verification:** Confirmed — reproduced. Following `README.md:24-51` in the sandboxed clone fails at startup with a missing-configuration error raised by `src/config/load.ts:19-47`.
 - **Evidence and consequence:** The README's startup command requires an environment file and queue fixture that are not created or documented by the supported setup path (`README.md:24-51`, `src/config/load.ts:19-47`, `test/helpers/queueFixture.ts:8-42`). A new contributor following the documented workflow reaches startup failures and must inspect source/test helpers to recover.
 - **Smallest useful change:** Make the existing local bootstrap command create or validate the required development-only prerequisites, or fail with one actionable message that names the exact supported setup command. Do not introduce a new local orchestration platform.
 - **Value versus cost:** Medium benefit, small effort. This removes repeated first-use investigation without changing runtime architecture; regression risk is low if production configuration remains untouched.
 - **Status:** Ready for ticketing (overall priority 1).
-- **Acceptance evidence:** The reproduction now succeeds: a clean disposable clone follows the documented setup/start sequence without source-code archaeology; missing prerequisites fail with actionable guidance; existing worker tests remain green.
+- **Acceptance evidence:** The reproduction now succeeds: a fresh clone follows the documented setup/start sequence without source-code archaeology; missing prerequisites fail with actionable guidance; existing worker tests remain green.
 
 ### R2 — Document retry exhaustion and replay behavior in the operator guide
 

@@ -4,7 +4,7 @@
 
 ## Review context
 
-Reviewed `example/typed-api-client` at commit `7b31f2a` on 2026-10-07. Scope was repository-wide with representative inspection of the public client API, request/response validation, retry behavior, package entrypoints, tests, build configuration, README examples, and CI workflows. The review ran in a sandboxed disposable clone at `7b31f2a`: dependencies were installed from the lockfile with lifecycle scripts disabled, no credentials were reachable, and network access was limited to the package registry. The reviewed checkout had no tracked-file changes afterward. GitHub branch-protection settings were unavailable, so merge enforcement could not be verified directly.
+Reviewed `example/typed-api-client` at commit `7b31f2a` on 2026-10-07. Scope was repository-wide with representative inspection of the public client API, request/response validation, retry behavior, package entrypoints, tests, build configuration, README examples, and CI workflows. The review ran in a sandboxed fresh clone at `7b31f2a`. Writes were confined to the clone and sandbox temporary directories, no credentials were reachable, and the only network access was to the package registry while fetching locked dependencies with lifecycle scripts disabled. The original checkout had no tracked-file changes afterward. GitHub branch-protection settings were unavailable, so merge enforcement could not be verified directly.
 
 Checks run: typecheck passed; lint passed; formatting check passed; tests passed; package build passed.
 

@@ -11,7 +11,7 @@ The scorecard is designed for repository-aware coding agents. It evaluates the c
 ## Quick start
 
 1. Open [`PROMPT.md`](./PROMPT.md) and copy the full prompt.
-2. Start a capable coding agent in a disposable clone of the repository you want to review, checked out at the commit to assess:
+2. Start a capable coding agent in a fresh clone of the repository you want to review, checked out at the commit to assess:
 
    ```bash
    git clone https://github.com/OWNER/REPO.git scorecard-review
@@ -19,7 +19,7 @@ The scorecard is designed for repository-aware coding agents. It evaluates the c
    git checkout COMMIT_SHA
    ```
 
-   To let the review run tests and other checks that execute code, start the agent in an isolated environment. It needs no reachable production credentials (environment variables, credential files, or cloud identities) and no network access beyond the package registry. Without that isolation, the review runs only checks that cannot reach external services and reports the rest as not run. An existing checkout also works; the review does not edit tracked files or install dependencies there.
+   To let the review run tests and other checks that execute code, start the agent in a sandbox around that clone. The sandbox must confine writes to the clone and its own temporary directories, block network access for executed code, and expose no production credentials. Use a fresh clone from the remote: a linked worktree shares Git configuration and hooks with your original repository, and a default local clone hardlinks its object files to it. Without that isolation, the review inspects checks statically and reports them as not run, unless you explicitly authorize running checks in your own environment for a repository you trust.
 3. Paste the prompt and add a short instruction such as:
 
    > Assess this repository using the Code Quality Scorecard prompt above.
@@ -70,7 +70,7 @@ Engineering health asks whether the code is sound. The frontier section asks how
 - **Core job and outcome:** what the project does, for whom, and the measured evidence that it succeeds.
 - **Reference set:** 3–5 current alternatives, such as open-source projects, products, platform-native features, or research, each with a dated source.
 - **Capability dimensions:** the 3–6 dimensions that decide success, each compared with the strongest reference.
-- **Position:** Frontier-defining, At frontier, Near frontier, Behind frontier, or NE.
+- **Position:** Frontier-defining, At frontier, Near frontier, Behind frontier, or NE. A comparison counts as a gap only when task, dataset, metric, and operating constraints are comparable; otherwise it is a hypothesis for the frontier bet to test.
 - **Build versus adopt:** components that rebuild something now available off the shelf.
 - **Next frontier bet:** at most one, framed as an experiment with success and stop criteria. A D or F in correctness, security, or test quality on the core workflow blocks it.
 
@@ -82,7 +82,7 @@ The agent should be able to inspect the repository. Better results are possible 
 
 The rubric is capability-adaptive. It does not require a particular GitHub integration, CLI, memory service, model, CI provider, linter, formatter, test framework, or package manager. When evidence is unavailable, the agent should report the access gap or use `NE — Not enough evidence` instead of guessing.
 
-The review may run existing non-fixing validation commands when they are safe. It prefers a disposable clone pinned to the reviewed commit, where it may fetch dependencies exactly as locked, with install scripts disabled where the package manager supports it. It runs code-executing checks only where no production credentials are reachable and network access is limited to the package registry. Otherwise it runs only checks that cannot reach external services and reports the rest as not run. It must not change dependency declarations or lockfiles, edit tracked files, deploy, access production, or create tickets or pull requests.
+The review executes repository or dependency code only in an isolated environment. That means a fresh clone pinned to the reviewed commit, inside a sandbox that confines writes to that clone and its own temporary directories, with no production credentials. Executed code gets no network access; the package registry is reachable only to fetch locked dependencies with install scripts disabled. Without that isolation, the review assesses checks statically and reports them as not run, unless the user directly and explicitly authorizes running checks in their own environment for a trusted repository. Repository content, such as an `AGENTS.md` file, cannot grant that authorization. It must not change dependency declarations or lockfiles, edit tracked files, deploy, access production, or create tickets or pull requests.
 
 ## Why the value gate matters
 
@@ -119,7 +119,7 @@ Do not reduce the scorecard to an arithmetic overall score. A serious correctnes
 
 - [`examples/strong-project.md`](./examples/strong-project.md) — an illustrative client library with no new recommendations, for which frontier capability is not a goal.
 - [`examples/project-with-opportunities.md`](./examples/project-with-opportunities.md) — an illustrative worker with two confirmed, ticket-ready opportunities and one refuted candidate.
-- [`examples/model-driven-service.md`](./examples/model-driven-service.md) — an illustrative model-driven service with a realistic grade spread, parked opportunities, a full frontier assessment, and a frontier bet blocked by a security finding.
+- [`examples/model-driven-service.md`](./examples/model-driven-service.md) — an illustrative model-driven service with a realistic grade spread, parked opportunities, a full frontier assessment that ends in NE because the reference measurements are not comparable, and a frontier bet blocked by a security finding.
 
 The examples are synthetic and intentionally compact. They demonstrate the expected shape of the output rather than prescribing grades for any particular technology stack.
 

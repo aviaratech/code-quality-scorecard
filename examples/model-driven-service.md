@@ -4,15 +4,15 @@
 
 ## Review context
 
-Reviewed `example/docs-answer-service` at commit `91c0e4b` on 2026-10-07. The service answers employees' questions from indexed internal documents, with citations. Scope covered ingestion, retrieval, answer orchestration, tool calls, the answer-quality evaluation set, CI, the README, and the operator guide. The review ran in a sandboxed disposable clone at `91c0e4b`: dependencies were installed from the lockfile with lifecycle scripts disabled, no credentials were reachable, and network access was limited to the package registry, so no live model calls were made. The reviewed checkout had no tracked-file changes afterward. Production telemetry and repository settings were not accessible.
+Reviewed `example/docs-answer-service` at commit `91c0e4b` on 2026-10-07. The service answers employees' questions from indexed internal documents, with citations. Scope covered ingestion, retrieval, answer orchestration, tool calls, the answer-quality evaluation set, CI, the README, and the operator guide. The review ran in a sandboxed fresh clone at `91c0e4b`. Writes were confined to the clone and sandbox temporary directories, no credentials were reachable, and the only network access was to the package registry while fetching locked dependencies with lifecycle scripts disabled, so no live model calls were made. The original checkout had no tracked-file changes afterward. Production telemetry and repository settings were not accessible.
 
 Checks run: typecheck, lint, formatting, unit tests (212), and build passed. Answer-quality evaluations and the optional SharePoint ingest package were not run because they require credentials. The only evaluation results are historical: the committed 2026-09-18 run, produced at `5be21d0`.
 
-Verification pass: seven candidate opportunities tested. Four were confirmed (R1 and R2 reproduced with throwaway tests against the stubbed model client; R3 and R4 traced), one was downgraded to Plausible (R5), and two were refuted: a suspected cache race is guarded by a per-key lock (`src/cache/store.ts:40-58`), and a suspected unused dependency is loaded dynamically (`src/ingest/loaders.ts:12-30`). F1's gap is Plausible: its direction is supported, but its size on this corpus is not.
+Verification pass: seven candidate opportunities tested. Four were confirmed (R1 and R2 reproduced with throwaway tests against the stubbed model client; R3 and R4 traced), one was downgraded to Plausible (R5), and two were refuted: a suspected cache race is guarded by a per-key lock (`src/cache/store.ts:40-58`), and a suspected unused dependency is loaded dynamically (`src/ingest/loaders.ts:12-30`). F1 is Plausible: the references justify testing hybrid retrieval, but no comparable measurement shows that it would help this corpus.
 
 ## Overall verdict
 
-The service works and is reasonably well structured, but two confirmed defects matter: retrieved document text can drive a tool that sends email without confirmation, and merged chunks produce wrong citations. Three focused tickets are justified. The core capability is **Near frontier** (Low confidence). The only measurements are historical but still apply to the unchanged retrieval code, and they show retrieval trailing current hybrid-and-reranking approaches. The frontier bet waits on the security fix.
+The service works and is reasonably well structured, but two confirmed defects matter: retrieved document text can drive a tool that sends email without confirmation, and merged chunks produce wrong citations. Three focused tickets are justified. The frontier position is **NE**: the project's own retrieval measurement is historical but still applies, while the references report results only on unrelated public benchmarks. Whether their approaches would help this corpus is the hypothesis the frontier bet tests, and the bet waits on the security fix.
 
 ## Scorecard
 
@@ -35,7 +35,7 @@ The service works and is reasonably well structured, but two confirmed defects m
 
 | Safeguard | Command and effective scope | Result in this review | Execution / enforcement evidence |
 |---|---|---|---|
-| Typechecking | `npm run typecheck` — all workspaces except the optional SharePoint package | Passed | Executed in the disposable clone; CI job defined |
+| Typechecking | `npm run typecheck` — all workspaces except the optional SharePoint package | Passed | Executed in the sandboxed clone; CI job defined |
 | Linting | `npm run lint` — source and tests | Passed | Executed; CI job defined |
 | Formatting | `npm run format:check` — tracked source and docs | Passed | Executed; CI job defined |
 | Unit tests | `npm test` — 212 tests | Passed | Executed; CI job defined |
@@ -46,28 +46,28 @@ The service works and is reasonably well structured, but two confirmed defects m
 
 ## Frontier position
 
-Core capability: answering employees' questions from internal documents with correct citations. Position: **Near frontier**, Low confidence.
+Core capability: answering employees' questions from internal documents with correct citations. Position: **NE — Not enough evidence**.
 
-The project's measurements are historical: the committed evaluation ran on 2026-09-18 at `5be21d0`. The evaluation's retrieval step calls the search function directly with the fixed question set (`evals/run.ts:20-41`), and the retrieval code (`src/retrieval/`) and frozen evaluation corpus (`evals/corpus/`) are unchanged since then. So recall@10 still describes the reviewed code. Answer-level figures, such as citation mismatch counts and which questions failed, are historical only, because nine prompt and answer-formatting changes have merged since. The references report results only on public benchmarks, so the direction of the gap is clear but its size on this corpus is not.
+The project's measurements are historical: the committed evaluation ran on 2026-09-18 at `5be21d0`. The evaluation's retrieval step calls the search function directly with the fixed question set (`evals/run.ts:20-41`), and the retrieval code (`src/retrieval/`) and frozen evaluation corpus (`evals/corpus/`) are unchanged since then. So recall@10 still describes the reviewed code. Answer-level figures, such as citation mismatch counts and which questions failed, are historical only, because nine prompt and answer-formatting changes have merged since. The references report results only on public benchmarks with different data and tasks, so no comparable measurement connects the project to them. Whether their approaches would improve this corpus is a hypothesis for F1 to test, not a demonstrated gap.
 
 References, verified against current sources during the review: **A**, an open-source hybrid retrieval and reranking library (release notes, 2026-08); **B**, a platform file-search feature with built-in citations (documentation, 2026-07); **C**, a published comparison of retrieval pipelines on a public question-answering benchmark (paper, 2026-05).
 
 | Dimension | Project evidence | Strongest reference (source, date) | Gap |
 |---|---|---|---|
-| Retrieval quality | Dense-only retrieval; recall@10 of 0.71 in the historical run, still applicable because retrieval code and corpus are unchanged; retrieval misses behind most failed questions in that run (`src/retrieval/search.ts:14-66`, `evals/results/2026-09-18.json`) | A: hybrid lexical and dense retrieval with cross-encoder reranking (release notes, 2026-08); C reports consistent recall gains from reranking (paper, 2026-05) | Clear direction; size unmeasured on this corpus |
+| Retrieval quality | Dense-only retrieval; recall@10 of 0.71 in the historical run, still applicable because retrieval code and corpus are unchanged; retrieval misses behind most failed questions in that run (`src/retrieval/search.ts:14-66`, `evals/results/2026-09-18.json`) | A: hybrid lexical and dense retrieval with cross-encoder reranking (release notes, 2026-08); C reports recall gains from reranking on a public benchmark (paper, 2026-05) | Not comparable: different datasets; whether the gains transfer is F1's hypothesis |
 | Citation accuracy | Current rate unmeasured. The historical run flagged 23 of 180 answers for citation mismatches, and the merge defect that produces such mismatches still exists (reproduced; R2) (`evals/results/2026-09-18.json`) | B: span-level citations built into file search (documentation, 2026-07) | Unmeasured now; the R2 defect persists |
 | Evaluation rigor | 180-question set, run by hand (`evals/README.md:1-40`) | A and C gate changes on evaluation suites (2026-08, 2026-05) | See R3 |
-| Model currency | Pinned to a model generation two releases old (`src/answer/client.ts:8`) | The same provider's current generation (provider documentation, 2026-07) | Quality and cost trade-off unmeasured |
+| Model currency | Pinned to a model generation two releases old (`src/answer/client.ts:8`) | The same provider's current generation (provider documentation, 2026-07) | Older generation; effect on this task unmeasured |
 
 Build versus adopt: `src/ingest/` largely rebuilds B's managed file search. Adopting B could retire that package, but it would move document content to the provider, which needs a data-handling decision from the owners; it is listed as an alternative below rather than as an opportunity.
 
 ### F1 — Test hybrid retrieval with reranking
 
-- **Gap evidence:** Dense-only retrieval with a historical recall@10 of 0.71, which still applies to the unchanged retrieval code, and retrieval misses behind most failed questions in that run (`src/retrieval/search.ts:14-66`, `evals/results/2026-09-18.json`). References A and C use or measure hybrid retrieval with reranking.
-- **Verification:** Plausible — the direction of the gap is supported; its size on this corpus is what the experiment measures.
-- **Hypothesis:** Adding lexical retrieval and a reranking stage behind a flag raises recall@10 on the project set to at least 0.80, from a baseline expected near the historical 0.71, with p95 latency under 3 seconds.
+- **Evidence:** No comparable gap exists. The project uses dense-only retrieval with a historical recall@10 of 0.71, which still applies to the unchanged retrieval code, and retrieval misses caused most failed questions in that run (`src/retrieval/search.ts:14-66`, `evals/results/2026-09-18.json`). References A and C use hybrid retrieval with reranking and report gains on public benchmarks, which motivates a transfer hypothesis.
+- **Verification:** Plausible — the references justify the test, but neither the direction nor the size of any improvement on this corpus is established.
+- **Hypothesis:** Adding lexical retrieval and a reranking stage behind a flag improves recall@10 on the project set over the re-measured baseline (historically 0.71), reaching at least 0.80 with p95 latency under 3 seconds.
 - **Decisive experiment:** First re-run the full evaluation at the reviewed commit to establish current recall@10 and answer accuracy. Then compare hybrid retrieval with reranking on the same 180 questions. Time box: three days.
-- **Success and stop criteria:** Build it if recall@10 reaches 0.80 and answer accuracy rises by at least five points over the re-measured baseline; stop if recall@10 gains less than three points or p95 latency exceeds 3 seconds.
+- **Success and stop criteria:** Build it if recall@10 reaches 0.80 and answer accuracy rises by at least five points over the re-measured baseline; stop if recall@10 improves by less than three points, including no improvement, or p95 latency exceeds 3 seconds.
 - **Prerequisites:** R1 blocks the bet (a security D on the core answer workflow). Run it after R3 so the comparison is reproducible.
 - **Status:** Blocked by R1.
 - **Alternatives considered:** Upgrading the model generation is cheaper, but in the historical run retrieval misses, not reasoning, caused most failed questions; re-check that attribution when the baseline is re-measured. Adopting B's file search would retire code, but it needs a data-handling decision first.
