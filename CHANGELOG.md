@@ -2,6 +2,27 @@
 
 All notable changes to the Code Quality Scorecard rubric are documented here.
 
+## 5.0 — 2026-10-07
+
+Adds a frontier assessment and a verification pass, caps ticket-ready items per review, and retires code smells as a graded category. Compare 5.0 and 4.x scorecards on the remaining categories only.
+
+Added:
+
+- Capability and frontier position (section 5): core job and outcome evidence, a dated reference set, capability dimensions, a five-level position scale, build-versus-adopt flags, and at most one frontier bet framed as an experiment with success and stop criteria. A D or F in correctness, security, or test quality on the core workflow blocks the bet. Frontier position never changes a category grade.
+- Verification pass (section 6): the reviewer tries to refute every candidate opportunity, the frontier bet, every grade of C or lower, and any Frontier-defining or At frontier position before writing output. Opportunities are labeled Confirmed or Plausible; Refuted findings are dropped and counted.
+- Ticket budget: only the overall priorities (up to three by default) and verified critical alerts are Ready for ticketing. Other worthwhile opportunities are Parked.
+- Execution environment rules: prefer a disposable clone pinned to the reviewed commit, and fetch dependencies only as locked there, with install scripts disabled where supported. Code-executing checks run only where no production credentials are reachable and network access is limited to the package registry; otherwise only checks that cannot reach external services run. The review ends by confirming no tracked-file changes.
+- Measurements from earlier revisions must be labeled historical, with their producing revision, and shown to apply to the reviewed code before they support a frontier position.
+- Evaluations count as the relevant tests for model-driven behavior.
+- `examples/model-driven-service.md`, showing a realistic grade spread, an NE optional category, parked opportunities, refuted candidates, and a blocked frontier bet.
+
+Changed:
+
+- Code smells and change friction became a diagnostic lens. Substantiated findings are graded under readability, architecture, duplication, or correctness, and an A in those categories needs positive evidence of localized change.
+- Documentation guidance in context-setting and output was consolidated.
+- The overall verdict, review context, and opportunity format now carry the frontier position, execution environment, verification counts, and verification labels.
+- Existing examples no longer award an A because a search found nothing, and their code-smells rows were removed.
+
 ## 4.0 — 2026-09-25
 
 Initial public baseline.

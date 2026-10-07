@@ -2,7 +2,7 @@
 
 Thank you for helping improve the Code Quality Scorecard.
 
-The project optimizes for an assessment that is evidence-led, portable across repositories and agent environments, and resistant to low-value cleanup work. Changes to the rubric should improve decision quality without turning it into a style guide, tool checklist, or backlog generator.
+The project optimizes for an assessment that is evidence-led, portable across repositories and agent environments, and resistant to low-value cleanup and speculative feature work. Changes to the rubric should improve decision quality without turning it into a style guide, tool checklist, feature wishlist, or backlog generator.
 
 ## Principles to preserve
 
@@ -13,9 +13,11 @@ Contributions should preserve these properties:
 3. **Grades and recommendations are separate.** A non-A grade may accurately describe a weakness while no immediate work is worth doing.
 4. **Value gate before work.** Recommendations require a concrete consequence and a bounded intervention whose expected value beats deferral or doing nothing.
 5. **Tool neutrality.** Do not require a particular model, GitHub integration, CLI, CI provider, linter, formatter, package manager, test framework, or agent plugin unless the requirement is itself part of an explicitly optional adapter.
-6. **Read-only assessment.** The canonical scorecard does not edit code, install or upgrade dependencies, deploy, or create tickets/PRs.
-7. **No quota filling.** The rubric must allow a strong project to produce no recommendations.
+6. **Read-only assessment.** The canonical scorecard does not edit tracked files, change dependency declarations or lockfiles, deploy, or create tickets/PRs. Disposable copies, locked installs, and throwaway probes are allowed only as the prompt defines them.
+7. **No quota filling.** The rubric must allow a strong project to produce no recommendations, and the ticket budget stays small.
 8. **Uncertainty is explicit.** Missing access lowers confidence or produces `NE`; it is not evidence of a defect.
+9. **Health and frontier stay separate.** Frontier position never changes a category grade, and frontier work enters as a bounded experiment rather than a feature backlog.
+10. **Challenge before ticketing.** Findings are tested against the code before they can become tickets, and unproven findings can become verification tickets only.
 
 ## Proposing a rubric change
 
@@ -39,4 +41,4 @@ Changes that materially alter category meaning, grade semantics, recommendation 
 
 When a change affects expected output, update or add a synthetic example that demonstrates the behavior without depending on a private repository.
 
-Examples should illustrate the rubric; they should not become hidden grading rules.
+Examples should illustrate the rubric; they should not become hidden grading rules. Examples must also follow the rubric they illustrate, for example by supporting every A with positive evidence. Use placeholders rather than real products or papers for frontier reference points.
